@@ -1,0 +1,12 @@
+<component name="libraryTable">
+  <library name="mockito-all-1.10.19">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/mockito-all-1.10.19.jar!/" />
+      <root url="jar://$PROJECT_DIR$/lib/sqlite-jdbc-3.21.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$PROJECT_DIR$/lib/mockito-all-1.10.19.jar!/" />
+    </SOURCES>
+  </library>
+</component>
