@@ -3,18 +3,15 @@ import teste.Cidades;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
-import java.io.*;
+import java.io.File;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-
 import java.util.List;
 
 public class Funcoes {
@@ -25,14 +22,13 @@ public class Funcoes {
         Class.forName("org.sqlite.JDBC");
         File bd = new File("bdprevisao.db");
         /* verifica se o arquivo do BD existe na raiz do projeto */
-        if( !bd.exists() ){
+        if (!bd.exists()) {
             /* cria o arquivo do BD na raiz do projeto e cria uma conexão para o BD */
             conexao = DriverManager.getConnection("jdbc:sqlite:bdprevisao.db");
             /* como o BD não existe então é necessário criar as tabelas */
             createTableCidade();
             createTablePrevisao();
-        }
-        else{
+        } else {
             /* cria uma conexão com o BD */
             conexao = DriverManager.getConnection("jdbc:sqlite:bdprevisao.db");
         }
@@ -57,19 +53,29 @@ public class Funcoes {
         return true;
     }
 
-    public boolean createTableCidade() throws SQLException{
+    public boolean createTableCidade() throws SQLException {
         Statement stmt = conexao.createStatement();
 //        stmt.execute("PRAGMA encoding='UTF-8';");
-        String sql = "create table tbcidade("+
-                "id int not null,"+
-                "nome varchar(80) not null,"+
-                "uf char(2) not null,"+
+        String sql = "create table tbcidade(" +
+                "id int not null," +
+                "nome varchar(80) not null," +
+                "uf char(2) not null," +
                 "atualizacao date not null"
-                +")";
+                + ")";
 
         stmt.executeUpdate(sql);
         stmt.close();
         return true;
+    }
+
+    public boolean cleanPrevisao() throws SQLException {
+
+        Statement stmt = conexao.createStatement();
+        String sql = "delete from tbprevisao;";
+        stmt.executeUpdate(sql);
+        stmt.close();
+        return true;
+
     }
 
 
@@ -88,9 +94,9 @@ public class Funcoes {
 
 
         System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
-        stmt.setInt(1, cidade.getId() );
-        stmt.setString(2, cidade.getNome() );
-        stmt.setString(3, cidade.getUf() );
+        stmt.setInt(1, cidade.getId());
+        stmt.setString(2, cidade.getNome());
+        stmt.setString(3, cidade.getUf());
         stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.execute();
         stmt.close();
@@ -98,12 +104,13 @@ public class Funcoes {
         return true;
     }
 
-    public List<Cidade> selectCidade(String sql) throws SQLException{
+    public List<Cidade> selectCidade(String nome) throws SQLException {
         Statement stmt = conexao.createStatement();
+        String sql = "select * from tbcidade whene nome = '" + nome + "'";
         ResultSet rs = stmt.executeQuery(sql);
         List<Cidade> lista = new ArrayList<>();
         Cidade cidade;
-        while ( rs.next() ) {
+        while (rs.next()) {
             cidade = new Cidade();
             cidade.setId(rs.getInt("id"));
             cidade.setNome(rs.getString("nome"));
@@ -133,9 +140,9 @@ public class Funcoes {
 //        return resultado;
 //    }
 
-    public Cidade[] getXmlCidadeAndConvertToObjectCidade(String xml) throws Exception {
+    public Cidade[] getXmlCidadeAndConvertToObjectCidade(String cidade) throws Exception {
         JAXBContext context = JAXBContext.newInstance(Cidades.class);
-        URL url = new URL("http://servicos.cptec.inpe.br/XML/listaCidades?city=Jacare");
+        URL url = new URL("http://servicos.cptec.inpe.br/XML/listaCidades?city=" + cidade + ";");
         HttpURLConnection http = (HttpURLConnection) url.openConnection();
         http.addRequestProperty("User-Agent", "Mozilla/4.76");
         InputStream is = http.getInputStream();
