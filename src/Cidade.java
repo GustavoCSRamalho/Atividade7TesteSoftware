@@ -1,19 +1,17 @@
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import java.util.Date;
 
 @XmlRootElement(name = "cidade")
-@XmlType(propOrder = {"nome", "uf", "id","atualizacao"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Cidade {
     @XmlElement(name = "id")
-    private Integer id;
+    public Integer id;
     @XmlElement(name = "nome")
-    private String nome;
+    public String nome;
     @XmlElement(name = "uf")
-    private String uf;
-    @XmlElement(name = "atualizacao")
-    private Date atualizacao;
+    public String uf;
+
+    public String atualizacao;
 
     public Integer getId() {
         return id;
@@ -39,11 +37,11 @@ public class Cidade {
         this.uf = uf;
     }
 
-    public Date getAtualizacao() {
+    public String getAtualizacao() {
         return atualizacao;
     }
 
-    public void setAtualizacao(Date atualizacao) {
+    public void setAtualizacao(String atualizacao) {
         this.atualizacao = atualizacao;
     }
 }

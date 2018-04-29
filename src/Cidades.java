@@ -1,18 +1,18 @@
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
+import java.util.List;
 
 @XmlRootElement(name = "cidades")
-@XmlType(propOrder = {"cidade"})
+@XmlAccessorType(XmlAccessType.FIELD)
 public class Cidades {
-    @XmlElement
-    private Cidade[] cidade;
 
-    public Cidade[] getCidade() {
-        return cidade;
+    @XmlElement(name = "cidade")
+    Cidade[] listaCidade;
+
+    public Cidade[] getLista() {
+        return listaCidade;
     }
 
-    public void setCidade(Cidade[] cidade) {
-        this.cidade = cidade;
+    public void setLista(Cidade[] lista) {
+        this.listaCidade = lista;
     }
 }

@@ -8,7 +8,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.sql.*;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+
 import java.util.List;
 
 public class Funcoes {
@@ -36,7 +40,7 @@ public class Funcoes {
 
     public boolean createTablePrevisao() throws SQLException {
         Statement stmt = conexao.createStatement();
-        String sql = "create table if not exists tbprevisao( " +
+        String sql = "create table tbprevisao( " +
                 "id int not null," +
                 "dia date not null," +
                 "tempo char(3) not null," +
@@ -53,11 +57,13 @@ public class Funcoes {
 
     public boolean createTableCidade() throws SQLException{
         Statement stmt = conexao.createStatement();
-        String sql = "create table if not exists tbcidade("+
+//        stmt.execute("PRAGMA encoding='UTF-8';");
+        String sql = "create table tbcidade("+
                 "id int not null,"+
                 "nome varchar(80) not null,"+
                 "uf char(2) not null,"+
-                "atualizacao data not null";
+                "atualizacao date not null"
+                +")";
 
         stmt.executeUpdate(sql);
         stmt.close();
@@ -65,14 +71,18 @@ public class Funcoes {
     }
 
 
-    public boolean insertCidade(Cidade cidade) throws SQLException{
+    public boolean insertCidade(Cidade cidade) throws SQLException, ParseException {
         /* o campo atualizacao irá receber o valor padrão, ou seja, null */
-        String sql = "insert or ignore into tbcidade(id,nome,uf,atualizacao) values(?,?,?,?)";
+        String sql = "insert  into tbcidade(id,nome,uf,atualizacao) values(?,?,?,?)";
         PreparedStatement stmt = conexao.prepareStatement(sql);
+        DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
+//        Date d = new Date();
+//        stmt.execute("PRAGMA encoding=\"UTF-8\"");
+        System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.setInt(1, cidade.getId() );
         stmt.setString(2, cidade.getNome() );
         stmt.setString(3, cidade.getUf() );
-        stmt.setDate(4, (Date) cidade.getAtualizacao());
+        stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.execute();
         stmt.close();
         conexao.commit();
@@ -89,7 +99,7 @@ public class Funcoes {
             cidade.setId(rs.getInt("id"));
             cidade.setNome(rs.getString("nome"));
             cidade.setUf(rs.getString("uf"));
-            cidade.setAtualizacao(rs.getDate("atualizacao"));// troquei o getString pelo get Date, pois
+            cidade.setAtualizacao(rs.getString("atualizacao"));// troquei o getString pelo get Date, pois
             //a variavel do bando é do tipo DATE nao STRING
             lista.add(cidade);
         }
@@ -116,11 +126,12 @@ public class Funcoes {
 
     public Cidade[] xmlToObjectCidade(String xml) throws Exception {
         StringReader sr = new StringReader(xml);
+//        System.out.println(sr.toString());
         /* a base do XML é uma marcação de nome cidades */
         JAXBContext context = JAXBContext.newInstance(Cidades.class);
         Unmarshaller un = context.createUnmarshaller();
         Cidades cidades = (Cidades) un.unmarshal(sr);
-        return cidades.getCidade();
+        return cidades.getLista();
     }
 
 
