@@ -1,12 +1,14 @@
+import teste.Cidade;
+import teste.Cidades;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
-import java.io.StringReader;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -78,6 +80,13 @@ public class Funcoes {
         DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
 //        Date d = new Date();
 //        stmt.execute("PRAGMA encoding=\"UTF-8\"");
+//        String nfdNormalizedString = Normalizer.normalize(cidade.getNome(), Normalizer.Form.NFD);
+//        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+//        pattern.matcher(nfdNormalizedString).replaceAll("");
+
+//        System.out.println("Novo : "+ nf);
+
+
         System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.setInt(1, cidade.getId() );
         stmt.setString(2, cidade.getNome() );
@@ -109,28 +118,30 @@ public class Funcoes {
         return lista;
     }
 
-    public String getXMLCidade(String cidade) throws Exception {
-        String charset = java.nio.charset.StandardCharsets.ISO_8859_1.name();
-        String linha, resultado = "";
-        String urlListaCidade = "http://servicos.cptec.inpe.br/XML/listaCidades?city=%s";
-        /* codifica os parâmetros */
-        String parametro = String.format(urlListaCidade, URLEncoder.encode(cidade, charset) );
-        URL url = new URL(parametro);
-        URLConnection conexao = url.openConnection();
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
-        while((linha = reader.readLine()) != null){
-            resultado += linha;
-        }
-        return resultado;
-    }
+//    public String getXMLCidade(String cidade) throws Exception {
+//        String charset = StandardCharsets.UTF_8.name();
+//        String linha, resultado = "";
+//        String urlListaCidade = "http://servicos.cptec.inpe.br/XML/listaCidades?city=%s";
+//        /* codifica os parâmetros */
+//        String parametro = String.format(urlListaCidade, URLEncoder.encode(cidade, charset) );
+//        URL url = new URL(parametro);
+//        URLConnection conexao = url.openConnection();
+//        BufferedReader reader = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
+//        while((linha = reader.readLine()) != null){
+//            resultado += linha;
+//        }
+//        return resultado;
+//    }
 
-    public Cidade[] xmlToObjectCidade(String xml) throws Exception {
-        StringReader sr = new StringReader(xml);
-//        System.out.println(sr.toString());
-        /* a base do XML é uma marcação de nome cidades */
+    public Cidade[] getXmlCidadeAndConvertToObjectCidade(String xml) throws Exception {
         JAXBContext context = JAXBContext.newInstance(Cidades.class);
+        URL url = new URL("http://servicos.cptec.inpe.br/XML/listaCidades?city=Jacare");
+        HttpURLConnection http = (HttpURLConnection) url.openConnection();
+        http.addRequestProperty("User-Agent", "Mozilla/4.76");
+        InputStream is = http.getInputStream();
         Unmarshaller un = context.createUnmarshaller();
-        Cidades cidades = (Cidades) un.unmarshal(sr);
+        Cidades cidades = (Cidades) un.unmarshal(is);
+//        Cidade[] lista = cidades.getLista();
         return cidades.getLista();
     }
 

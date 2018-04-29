@@ -1,3 +1,5 @@
+import teste.Cidade;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -23,16 +25,15 @@ public class Main {
             cidade = scan.readLine();
             System.out.println("Cidade digitada : "+cidade);
 
-//            List<Cidade> cidades = func.selectCidade("select * from tbcidade where uf = '"+cidade+"'");
-//            if(cidades.size() == 0){
+//            List<Cidade> cidades1 = func.selectCidade("select * from tbcidade where uf = '"+cidade+"'");
+//            if(cidades1.size() == 0){
 //                System.out.println("Não exite cidade!");
 //            }else{
 //                System.out.println("Existe cidades!");
 //            }
-            String xml = func.getXMLCidade(cidade);
-            xml = new String(xml.getBytes(),"UTF-8");
-            System.out.println("xml : "+xml);
-            Cidade[] cid = func.xmlToObjectCidade(xml);
+//            String xml = func.getXMLCidade(cidade);
+//            System.out.println("xml : "+xml);
+            Cidade[] cid = func.getXmlCidadeAndConvertToObjectCidade(cidade);
             for(int i  = 0; i < cid.length;i++){
                 func.insertCidade(cid[i]);
             }
