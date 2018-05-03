@@ -1,56 +1,52 @@
-import teste.Cidade;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Scanner;
-import java.util.concurrent.ExecutionException;
+import java.sql.Date;
+import java.time.LocalDate;
 
 public class Main {
 
-    private static Funcoes func;
-    private static Boolean roda = true;
-    private static String cidade;
-    private static String sair = "n";
+    //    private static FuncoesXML func;
+    public static Boolean roda = true;
+    public static String sair = "n";
+    private static FuncoesMain func;
+
 
     public static void main(String[] args) throws Exception {
-        func = new Funcoes();
-        func.conectar();
-        BufferedReader scan = new BufferedReader(new InputStreamReader(System.in));
-        while(roda){
-            System.out.println("Digite o nome de uma cidade : ");
-            cidade = scan.readLine();
-            System.out.println("Cidade digitada : "+cidade);
+        func = new FuncoesMain();
+        func.connectDB();
 
-//            List<Cidade> cidades1 = func.selectCidade("select * from tbcidade where uf = '"+cidade+"'");
-//            if(cidades1.size() == 0){
-//                System.out.println("Não exite cidade!");
-//            }else{
-//                System.out.println("Existe cidades!");
-//            }
-//            String xml = func.getXMLCidade(cidade);
-//            System.out.println("xml : "+xml);
-            Cidade[] cid = func.getXmlCidadeAndConvertToObjectCidade(cidade);
-            for(int i  = 0; i < cid.length;i++){
-                func.insertCidade(cid[i]);
+        while (roda) {
+
+            func.readInputData();
+            func.fillListCidades();
+
+            func.findCidadeInList();
+
+            Date data = Date.valueOf(LocalDate.now());
+
+//            Date dataT = new Date(Long.parseLong(func.getCidadeBD().getAtualizacao()));
+            Date dataT = (Date) func.getCidadeBD().getAtualizacao();
+
+            if (data.toString().equals(dataT.toString())) {
+                System.out.println("Ver previsão!");
+
+                func.getAndInsertPrevisao();
+                func.fillListPrevisao();
+                func.imprimePrevisao();
+            } else {
+                System.out.println("Deu ruim!");
+                func.updateAtualizacao();
+                func.dropPrevisa();
+                func.getAndInsertPrevisao();
+                func.fillListPrevisao();
+                func.imprimePrevisao();
             }
-
-            List<Cidade> cidades = func.selectCidade("select * from tbcidade where uf = '"+"SP"+"'");
-            System.out.println("Tamanho : "+cidades.size());
-            System.out.println("Deseja continuar ? (Y/n)");
-            sair = scan.readLine();
-
-//            Cidade[] lista = func.xmlToObjectCidade();
-            if(sair.toLowerCase().equals("n")){
+            if (func.exit()) {
                 roda = false;
             }
+
         }
 
 
-
-
     }
+
+
 }

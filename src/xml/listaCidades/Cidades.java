@@ -1,4 +1,4 @@
-import teste.Cidade;
+package xml.listaCidades;
 
 import javax.xml.bind.annotation.*;
 

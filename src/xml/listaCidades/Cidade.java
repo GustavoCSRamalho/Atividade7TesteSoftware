@@ -1,3 +1,5 @@
+package xml.listaCidades;
+
 import javax.xml.bind.annotation.*;
 import java.util.Date;
 
@@ -11,7 +13,7 @@ public class Cidade {
     @XmlElement(name = "uf")
     public String uf;
 
-    public String atualizacao;
+    public Date atualizacao;
 
     public Integer getId() {
         return id;
@@ -37,11 +39,11 @@ public class Cidade {
         this.uf = uf;
     }
 
-    public String getAtualizacao() {
+    public Date getAtualizacao() {
         return atualizacao;
     }
 
-    public void setAtualizacao(String atualizacao) {
+    public void setAtualizacao(Date atualizacao) {
         this.atualizacao = atualizacao;
     }
 }

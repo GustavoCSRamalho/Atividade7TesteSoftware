@@ -1,5 +1,6 @@
-import teste.Cidade;
-import teste.Cidades;
+import xml.cidadePrevisao.Previsao;
+import xml.listaCidades.Cidade;
+import xml.listaCidades.Cidades;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.Unmarshaller;
@@ -8,13 +9,12 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.sql.*;
-import java.text.DateFormat;
+import java.text.Normalizer;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Funcoes {
+public class FuncoesXML {
     private static Connection conexao = null;
 
     public Connection conectar() throws SQLException, ClassNotFoundException {
@@ -74,28 +74,36 @@ public class Funcoes {
         String sql = "delete from tbprevisao;";
         stmt.executeUpdate(sql);
         stmt.close();
+        conexao.commit();
         return true;
 
     }
+    public boolean updateAtualizacaoCidade(String id) throws SQLException {
+
+        Statement stmt = conexao.createStatement();
+        Date data = java.sql.Date.valueOf(java.time.LocalDate.now());
+        String sql = "update tbcidade set atualizacao = '"+data.getTime()+"' where id = "+id+";";
+        stmt.executeUpdate(sql);
+        stmt.close();
+        conexao.commit();
+        return true;
+
+    }
+
 
 
     public boolean insertCidade(Cidade cidade) throws SQLException, ParseException {
         /* o campo atualizacao irá receber o valor padrão, ou seja, null */
         String sql = "insert  into tbcidade(id,nome,uf,atualizacao) values(?,?,?,?)";
         PreparedStatement stmt = conexao.prepareStatement(sql);
-        DateFormat df = new SimpleDateFormat("yyyy/MM/dd");
-//        Date d = new Date();
-//        stmt.execute("PRAGMA encoding=\"UTF-8\"");
-//        String nfdNormalizedString = Normalizer.normalize(cidade.getNome(), Normalizer.Form.NFD);
-//        Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-//        pattern.matcher(nfdNormalizedString).replaceAll("");
+        String novoNome = Normalizer.normalize(cidade.getNome(), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
 
-//        System.out.println("Novo : "+ nf);
+//        System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
 
+//        Date data = ;
 
-        System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.setInt(1, cidade.getId());
-        stmt.setString(2, cidade.getNome());
+        stmt.setString(2, novoNome.toLowerCase());
         stmt.setString(3, cidade.getUf());
         stmt.setDate(4, java.sql.Date.valueOf(java.time.LocalDate.now()));
         stmt.execute();
@@ -104,9 +112,29 @@ public class Funcoes {
         return true;
     }
 
+    public boolean insertPrevisao(xml.cidadePrevisao.Previsao previsao, int id) throws SQLException{
+        /* o campo atualizacao irá receber o valor padrão, ou seja, null */
+        String sql = "insert  into tbprevisao(id,dia,tempo,minima,maxima,iuv) values(?,?,?,?,?,?)";
+        PreparedStatement stmt = conexao.prepareStatement(sql);
+//        String novoNome = Normalizer.normalize(cidade.getNome(), Normalizer.Form.NFD).replaceAll("[^\\p{ASCII}]", "");
+
+//        System.out.println(java.sql.Date.valueOf(java.time.LocalDate.now()));
+        Date date = new Date(previsao.getDia().getTime());
+        stmt.setInt(1, id);
+        stmt.setDate(2, date);
+        stmt.setString(3, previsao.getTempo());
+        stmt.setFloat(4, Float.parseFloat(previsao.getMinima()));
+        stmt.setFloat(5,Float.parseFloat(previsao.getMaxima()));
+        stmt.setString(6, previsao.getIuv());
+        stmt.execute();
+        stmt.close();
+        conexao.commit();
+        return true;
+    }
+
     public List<Cidade> selectCidade(String nome) throws SQLException {
         Statement stmt = conexao.createStatement();
-        String sql = "select * from tbcidade whene nome = '" + nome + "'";
+        String sql = "select * from tbcidade where nome = '" + nome + "';";
         ResultSet rs = stmt.executeQuery(sql);
         List<Cidade> lista = new ArrayList<>();
         Cidade cidade;
@@ -115,7 +143,7 @@ public class Funcoes {
             cidade.setId(rs.getInt("id"));
             cidade.setNome(rs.getString("nome"));
             cidade.setUf(rs.getString("uf"));
-            cidade.setAtualizacao(rs.getString("atualizacao"));// troquei o getString pelo get Date, pois
+            cidade.setAtualizacao(rs.getDate("atualizacao"));// troquei o getString pelo get Date, pois
             //a variavel do bando é do tipo DATE nao STRING
             lista.add(cidade);
         }
@@ -124,31 +152,39 @@ public class Funcoes {
         conexao.commit();
         return lista;
     }
+    public List<Previsao> selectPrevisao(String cod) throws SQLException {
+        Statement stmt = conexao.createStatement();
+        String sql = "select * from tbprevisao where id = '" + cod+ "';";
+        ResultSet rs = stmt.executeQuery(sql);
+        List<Previsao> lista = new ArrayList<>();
+        xml.cidadePrevisao.Previsao previsao;
+        while (rs.next()) {
+            previsao = new xml.cidadePrevisao.Previsao();
+            previsao.setId(rs.getInt("id"));
+            previsao.setDia(rs.getDate("dia"));
+            previsao.setTempo(rs.getString("tempo"));
+            previsao.setMinima(rs.getString("minima"));// troquei o getString pelo get Date, pois
+            previsao.setMaxima(rs.getString("maxima"));
+            previsao.setIuv(rs.getString("iuv"));
 
-//    public String getXMLCidade(String cidade) throws Exception {
-//        String charset = StandardCharsets.UTF_8.name();
-//        String linha, resultado = "";
-//        String urlListaCidade = "http://servicos.cptec.inpe.br/XML/listaCidades?city=%s";
-//        /* codifica os parâmetros */
-//        String parametro = String.format(urlListaCidade, URLEncoder.encode(cidade, charset) );
-//        URL url = new URL(parametro);
-//        URLConnection conexao = url.openConnection();
-//        BufferedReader reader = new BufferedReader(new InputStreamReader(conexao.getInputStream()));
-//        while((linha = reader.readLine()) != null){
-//            resultado += linha;
-//        }
-//        return resultado;
-//    }
+            //a variavel do bando é do tipo DATE nao STRING
+            lista.add(previsao);
+        }
+        rs.close();
+        stmt.close();
+        conexao.commit();
+        return lista;
+    }
+
 
     public Cidade[] getXmlCidadeAndConvertToObjectCidade(String cidade) throws Exception {
         JAXBContext context = JAXBContext.newInstance(Cidades.class);
-        URL url = new URL("http://servicos.cptec.inpe.br/XML/listaCidades?city=" + cidade + ";");
+        URL url = new URL("http://servicos.cptec.inpe.br/XML/listaCidades?city=" + cidade);
         HttpURLConnection http = (HttpURLConnection) url.openConnection();
         http.addRequestProperty("User-Agent", "Mozilla/4.76");
         InputStream is = http.getInputStream();
         Unmarshaller un = context.createUnmarshaller();
         Cidades cidades = (Cidades) un.unmarshal(is);
-//        Cidade[] lista = cidades.getLista();
         return cidades.getLista();
     }
 
